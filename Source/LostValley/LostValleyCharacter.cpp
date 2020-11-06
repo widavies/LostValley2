@@ -12,10 +12,15 @@
 //////////////////////////////////////////////////////////////////////////
 // ALostValleyCharacter
 
+TSubclassOf<class UObject> ABC;
+
 ALostValleyCharacter::ALostValleyCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	ConstructorHelpers::FObjectFinder<UBlueprint> AIPrint(TEXT("/Game/Blueprint/MyAI"));
+	ABC = AIPrint.Object->GeneratedClass;
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -82,17 +87,19 @@ void ALostValleyCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 void ALostValleyCharacter::SpawnPostman() {
 	UE_LOG(LogTemp, Warning, TEXT("Spawning postman..."));
 
-	FVector Location(-10963.179688f, 25308.160156, 3774.851562f);
+	//AIPrint.Object->GeneratedClass;
+
+	FVector Location(-15762.257812f, 27374.837891f, 3511.42041f);
 	FRotator Rotation(0.0f, 0.0f, 0.0f);
 	FActorSpawnParameters SpawnInfo;
-	
-	UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprint/PersonBP")));
-	UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
+	SpawnInfo.Instigator = this;
+	//
+	//UObject* SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprint/MyAI")));
+	//UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
 
 	UWorld* World = GetWorld();
-	//World->SpawnActor<AActor>(GeneratedBP->GeneratedClass)
-	APawn* Spawned = World->SpawnActor<APawn>(GeneratedBP->GeneratedClass, Location, Rotation, SpawnInfo);
-	
+	////World->SpawnActor<AActor>(GeneratedBP->GeneratedClass)
+	ACharacter* Spawned = World->SpawnActor<ACharacter>(ABC, Location, Rotation, SpawnInfo);
 	Spawned->SpawnDefaultController();
 
 }

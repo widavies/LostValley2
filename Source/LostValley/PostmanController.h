@@ -13,6 +13,9 @@ UCLASS()
 class LOSTVALLEY_API APostmanController : public AAIController
 {
 	GENERATED_BODY()
+private:
+	virtual void BeginPlay() override;
 public:
 	APostmanController();
+	void PickedDelay();
 };
