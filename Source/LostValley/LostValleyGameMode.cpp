@@ -13,5 +13,5 @@ ALostValleyGameMode::ALostValleyGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
-	//roadmap = new Roadmap(GetWorld());
+	roadmap = new Roadmap(GetWorld());
 }

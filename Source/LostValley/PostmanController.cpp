@@ -3,7 +3,7 @@
 
 #include "PostmanController.h"
 #include "NavigationSystem.h"
-
+#include "LostValleyGameMode.h"
 
 APostmanController::APostmanController() {
 
@@ -19,9 +19,9 @@ void APostmanController::BeginPlay() {
   UE_LOG(LogTemp, Warning, TEXT("I have somewhere to go2."));
 
   if(GetWorld()) {
-    //auto gamemode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
+    ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
 
-    //FVector goal = gamemode->roadmap->WhereTo(FVector(0.0f, 0.0f, 0.0f), FString("goal"));
+    FVector goal = GameMode->roadmap->WhereTo();
 
     UE_LOG(LogTemp, Log, TEXT("Got world. Now trying to find nav area for random loc..."));
     // get the current nav system from the world
@@ -35,15 +35,15 @@ void APostmanController::BeginPlay() {
       FVector startPosi = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
       // create a nav location to be used as our end position 
       // default will be set to our current position in case of failure to find a suitable end position
-      FNavLocation endPosi = FNavLocation(startPosi);
+      FNavLocation destination;
 
       UE_LOG(LogTemp, Error, TEXT("Test navArea: %s"), *NavigationArea->GetPathName());
 
       // attempt to get a random new position
-      if(NavigationArea->GetRandomReachablePointInRadius(startPosi, 5000, endPosi)) {
+      if(NavigationArea->GetRandomReachablePointInRadius(goal, 5000, destination)) {
         // if we were successfull in finding a new location...
         UE_LOG(LogTemp, Log, TEXT("Found new random loc"));
-        goTo = endPosi.Location;
+        goTo = destination.Location;
         FTimerHandle UnusedHandle;
         GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 2.0f, false);
       } else {

@@ -14,7 +14,7 @@ class LOSTVALLEY_API Roadmap
 public:
 	Roadmap(UWorld * world);
 	~Roadmap();
-	FVector WhereTo(FVector currentLocation, FString goal);
+	FVector WhereTo();
 private:
 	UWorld* world;
 };

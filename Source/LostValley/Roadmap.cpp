@@ -21,14 +21,15 @@ Roadmap::~Roadmap()
 {
 }
 
-FVector Roadmap::WhereTo(FVector currentLocation, FString goal) {
+FVector Roadmap::WhereTo() {
   FActorIterator AllActorsItr = FActorIterator(world);
 
   //While not reached end (overloaded bool operator)
   while(AllActorsItr) {
+    UE_LOG(LogTemp, Warning, TEXT("FOUND LOCATION %s"), *AllActorsItr->GetName());
     if(AllActorsItr->GetName().Equals(FString("tree1_Anim19"))) {
+      UE_LOG(LogTemp, Warning, TEXT("FOUND LOCATION"));
       return AllActorsItr->GetActorLocation();
-      break;
     }
 
     //next actor
