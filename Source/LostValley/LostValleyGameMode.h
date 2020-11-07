@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include <LostValley\Roadmap.h>
+
 #include "LostValleyGameMode.generated.h"
 
 UCLASS(minimalapi)
@@ -11,8 +13,10 @@ class ALostValleyGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+
 public:
 	ALostValleyGameMode();
+	Roadmap* roadmap;
 };
 
 

@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include <LostValley\Roadmap.h>
 
 //////////////////////////////////////////////////////////////////////////
 // ALostValleyCharacter
@@ -19,7 +20,7 @@ ALostValleyCharacter::ALostValleyCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	ConstructorHelpers::FObjectFinder<UBlueprint> AIPrint(TEXT("/Game/Blueprint/MyAI"));
+	ConstructorHelpers::FObjectFinder<UBlueprint> AIPrint(TEXT("/Game/Blueprint/PersonBP"));
 	ABC = AIPrint.Object->GeneratedClass;
 
 	// set our turn rates for input
@@ -98,6 +99,7 @@ void ALostValleyCharacter::SpawnPostman() {
 	//UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
 
 	UWorld* World = GetWorld();
+	
 	////World->SpawnActor<AActor>(GeneratedBP->GeneratedClass)
 	ACharacter* Spawned = World->SpawnActor<ACharacter>(ABC, Location, Rotation, SpawnInfo);
 	Spawned->SpawnDefaultController();

@@ -4,6 +4,7 @@
 #include "PostmanController.h"
 #include "NavigationSystem.h"
 
+
 APostmanController::APostmanController() {
 
 }
@@ -14,9 +15,14 @@ FVector goTo;
 void APostmanController::BeginPlay() {
   Super::BeginPlay();
 
+  
   UE_LOG(LogTemp, Warning, TEXT("I have somewhere to go2."));
 
   if(GetWorld()) {
+    //auto gamemode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
+
+    //FVector goal = gamemode->roadmap->WhereTo(FVector(0.0f, 0.0f, 0.0f), FString("goal"));
+
     UE_LOG(LogTemp, Log, TEXT("Got world. Now trying to find nav area for random loc..."));
     // get the current nav system from the world
     //UNavigationSystem* navSystem = UNavigationSystem::GetCurrent(GetWorld());
@@ -29,22 +35,17 @@ void APostmanController::BeginPlay() {
       FVector startPosi = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
       // create a nav location to be used as our end position 
       // default will be set to our current position in case of failure to find a suitable end position
-      FNavLocation endPosi = FNavLocation(startPosi);
-      UE_LOG(LogTemp, Error, TEXT("Start loc X: %d"), startPosi.X);
-      UE_LOG(LogTemp, Error, TEXT("Start loc Y: %d"), startPosi.Y);
-      //UE_LOG(LogTemp, Error, TEXT("End loc X: %d"), endPosi.Location.X);
-      //UE_LOG(LogTemp, Error, TEXT("End loc Y: %d"), endPosi.Location.Y);
-//      UE_LOG(LogTemp, Error, TEXT("Search rad: %f"), searchRadius);
+      FNavLocation endPosi;
 
       UE_LOG(LogTemp, Error, TEXT("Test navArea: %s"), *NavigationArea->GetPathName());
 
       // attempt to get a random new position
-      if(NavigationArea->GetRandomReachablePointInRadius(startPosi, 5000, endPosi)) {
+      if(NavigationArea->GetRandomReachablePointInRadius(startPosi, 50, endPosi)) {
         // if we were successfull in finding a new location...
         UE_LOG(LogTemp, Log, TEXT("Found new random loc"));
         goTo = endPosi.Location;
         FTimerHandle UnusedHandle;
-        GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 4.0f, false);
+        GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 2.0f, false);
       } else {
         UE_LOG(LogTemp, Error, TEXT("Random loc failed!"));
       }
