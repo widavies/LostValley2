@@ -35,12 +35,12 @@ void APostmanController::BeginPlay() {
       FVector startPosi = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
       // create a nav location to be used as our end position 
       // default will be set to our current position in case of failure to find a suitable end position
-      FNavLocation endPosi;
+      FNavLocation endPosi = FNavLocation(startPosi);
 
       UE_LOG(LogTemp, Error, TEXT("Test navArea: %s"), *NavigationArea->GetPathName());
 
       // attempt to get a random new position
-      if(NavigationArea->GetRandomReachablePointInRadius(startPosi, 50, endPosi)) {
+      if(NavigationArea->GetRandomReachablePointInRadius(startPosi, 5000, endPosi)) {
         // if we were successfull in finding a new location...
         UE_LOG(LogTemp, Log, TEXT("Found new random loc"));
         goTo = endPosi.Location;
