@@ -13,8 +13,10 @@
 
 Roadmap::Roadmap(UWorld * world) : world(world)
 {
-  
-
+  //world->GetNavigationSystem()->
+  //UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
+  //FBox map = NavigationArea->GetNavigationBounds().Array()[0].AreaBox;
+  //FVector center = map.GetCenter() - map.GetSize() / 2;
 }
 
 Roadmap::~Roadmap()
@@ -26,9 +28,7 @@ FVector Roadmap::WhereTo() {
 
   //While not reached end (overloaded bool operator)
   while(AllActorsItr) {
-    UE_LOG(LogTemp, Warning, TEXT("FOUND LOCATION %s"), *AllActorsItr->GetName());
     if(AllActorsItr->GetName().Equals(FString("tree1_Anim19"))) {
-      UE_LOG(LogTemp, Warning, TEXT("FOUND LOCATION"));
       return AllActorsItr->GetActorLocation();
     }
 

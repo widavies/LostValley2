@@ -28,6 +28,10 @@ void APostmanController::BeginPlay() {
     //UNavigationSystem* navSystem = UNavigationSystem::GetCurrent(GetWorld());
     // check that we have a nav system
     UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
+    FBox map = NavigationArea->GetNavigationBounds().Array()[0].AreaBox;
+    FVector center = map.GetCenter() - map.GetSize() / 2;
+    center.Z += 100;
+    //UE_LOG(LogTemp, Log, TEXT("Cemter: %d %d"), centerX, centerY);
 
     if(NavigationArea) {
       UE_LOG(LogTemp, Log, TEXT("Found nav area"));
@@ -40,7 +44,7 @@ void APostmanController::BeginPlay() {
       UE_LOG(LogTemp, Error, TEXT("Test navArea: %s"), *NavigationArea->GetPathName());
 
       // attempt to get a random new position
-      if(NavigationArea->GetRandomReachablePointInRadius(goal, 5000, destination)) {
+      if(NavigationArea->GetRandomReachablePointInRadius(center, 2000, destination)) {
         // if we were successfull in finding a new location...
         UE_LOG(LogTemp, Log, TEXT("Found new random loc"));
         goTo = destination.Location;
