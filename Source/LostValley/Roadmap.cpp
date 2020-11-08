@@ -28,20 +28,27 @@ void Roadmap::GeneratePRM() {
   // Step 0) Get obstacle (trees, houses) locations, mailboxes (destinations), postbox (starting)
   FVector postbox;
   TArray<FVector> mailboxes;
+
   TArray<FVector> obstacles;
   TArray<float> obstacleRadii;
   
   //While not reached end (overloaded bool operator)
   FActorIterator AllActorsItr = FActorIterator(world);
   while(AllActorsItr) {
+    float radius;
+    float halfHeight;
+    AllActorsItr->GetSimpleCollisionCylinder(radius, halfHeight);
+
     if(AllActorsItr->GetName().Contains(FString("Mailbox"))) {
       mailboxes.Add(AllActorsItr->GetActorLocation());
     } else if(AllActorsItr->GetName().Contains(FString("tree"))) {
       obstacles.Add(AllActorsItr->GetActorLocation());
-      obstacleRadii.Add(100); // radius of tree
+      obstacleRadii.Add(radius); // radius of tree
     } else if(AllActorsItr->GetName().Contains(FString("house"))) {
       obstacles.Add(AllActorsItr->GetActorLocation());
-      obstacleRadii.Add(100); // radius of tree
+      obstacleRadii.Add(radius); // radius of house
+    } else if(AllActorsItr->GetName().Equals(FString("PostBox"))) {
+      postbox = AllActorsItr->GetActorLocation();
     }
 
     //next actor
@@ -59,13 +66,50 @@ void Roadmap::GeneratePRM() {
 
   // Step 1) Generate N random points within the navigation bounds
   for(int i = 0; i < NUM_NODES; i++) {
-    float x = FMath::RandRange(start.X, end.X);
-    float y = FMath::RandRange(start.Y, end.Y);
-    float z = GetMapHeight(FVector2D(x, y));
+    // Check to make sure NodeLocation does not intersect with any obstacles
+    while(true) {
+      float x = FMath::RandRange(start.X, end.X);
+      float y = FMath::RandRange(start.Y, end.Y);
+      float z = GetMapHeight(FVector2D(x, y));
 
-    
-    
+      FVector NodeLocation(x, y, z);
+
+      bool intersects = false;
+
+      for(int j = 0; j < obstacles.Num(); j++) {
+        if(FVector::DistXY(NodeLocation, obstacles[j]) < obstacleRadii[j]) {
+          intersects = true;
+          break;
+        }
+      }
+
+      if(intersects) continue;
+      else {
+        nodePositions[i] = NodeLocation;
+        break;
+      }
+    }
   }
+
+  // Debug: Draw node locations
+  //for(int i = 0; i < NUM_NODES; i++) {
+  //  float x = nodePositions[i].X;
+  //  float y = nodePositions[i].Y;
+
+  //  FVector StartLocation{ x, y, 10000 };
+  //  FVector EndLocation{ x, y, -100 };
+
+  //  DrawDebugLine(
+  //    world,
+  //    StartLocation,
+  //    EndLocation,
+  //    FColor::Red,
+  //    true,
+  //    5.f,
+  //    0.f,
+  //    10.f
+  //  );
+  //}
 
 
   // Generate N random points within the navigation bounds

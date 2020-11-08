@@ -19,6 +19,6 @@ public:
 	FVector WhereTo();
 	float GetMapHeight(FVector2D Point);
 	void GeneratePRM();
-	FVector2D nodePositions[NUM_NODES];
+	FVector nodePositions[NUM_NODES];
 	UWorld* world;
 };
