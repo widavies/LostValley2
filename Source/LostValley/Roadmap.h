@@ -9,16 +9,30 @@
 /**
  * 
  */
-const int NUM_NODES = 1000;
+const int NUM_NODES = 111;
+const int NUM_GENERATED = 100;
+const int IX_POSTBOX = NUM_NODES - 1;
+const int IX_BRIDGE_1 = NUM_NODES - 2;
+const int IX_BRIDGE_2 = NUM_NODES - 3;
+
+const float SEA_LEVEL = 1350.0f;
 
 class LOSTVALLEY_API Roadmap
 {
 public:
 	Roadmap(UWorld * world);
 	~Roadmap();
-	FVector WhereTo();
+	// deliveringTo == -1 if has no mail
+	TArray<FVector*> Search(int deliveringTo);
 	float GetMapHeight(FVector2D Point);
 	void GeneratePRM();
+	bool IntersectsCircle(FVector obstacle, float obstacleRadius, FVector start, FVector end);
+	bool DropsBelowSeaLevel(FVector start, FVector end);
 	FVector nodePositions[NUM_NODES];
+	// The distance between nodes
+	int neighbors[NUM_NODES][NUM_NODES];
+	float cost[NUM_NODES][NUM_NODES];
+	bool prmBuilt = false;
+	int waitingMail = 10;
 	UWorld* world;
 };

@@ -9,61 +9,52 @@ APostmanController::APostmanController() {
 
 }
 
-FVector goTo;
+TArray<FVector*> instructions;
+int at = -1;
+bool ready = false;
 
 // https://community.gamedev.tv/t/random-location/146210/8
 void APostmanController::BeginPlay() {
   Super::BeginPlay();
 
   
-  UE_LOG(LogTemp, Warning, TEXT("I have somewhere to go2."));
-
   if(GetWorld()) {
-    
     ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
     GameMode->roadmap->GeneratePRM();
-    FVector goal = GameMode->roadmap->WhereTo();
-    
+    instructions = GameMode->roadmap->Search(-1);
+    at = 0;
 
-    UE_LOG(LogTemp, Log, TEXT("Got world. Now trying to find nav area for random loc..."));
-    // get the current nav system from the world
-    //UNavigationSystem* navSystem = UNavigationSystem::GetCurrent(GetWorld());
-    // check that we have a nav system
-    UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
-    FBox map = NavigationArea->GetNavigationBounds().Array()[0].AreaBox;
-    FVector center = map.GetCenter() - map.GetSize() / 2;
-    center.Z += 100;
-    //UE_LOG(LogTemp, Log, TEXT("Cemter: %d %d"), centerX, centerY);
-
-    if(NavigationArea) {
-      UE_LOG(LogTemp, Log, TEXT("Found nav area"));
-      // get our actors current location to pe used as our start position
-      FVector startPosi = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
-      // create a nav location to be used as our end position 
-      // default will be set to our current position in case of failure to find a suitable end position
-      FNavLocation destination;
-
-      UE_LOG(LogTemp, Error, TEXT("Test navArea: %s"), *NavigationArea->GetPathName());
-
-      // attempt to get a random new position
-      if(NavigationArea->GetRandomReachablePointInRadius(center, 2000, destination)) {
-        // if we were successfull in finding a new location...
-        UE_LOG(LogTemp, Log, TEXT("Found new random loc"));
-        goTo = destination.Location;
-        FTimerHandle UnusedHandle;
-        GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 2.0f, false);
-      } else {
-        UE_LOG(LogTemp, Error, TEXT("Random loc failed!"));
-      }
-    }
+    FTimerHandle UnusedHandle;
+    GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 2.0f, false);
   }
 }
 
 void APostmanController::PickedDelay() {
-  EPathFollowingRequestResult::Type type = MoveToLocation(goTo);
-  if(type == EPathFollowingRequestResult::Failed) {
-    UE_LOG(LogTemp, Error, TEXT("REE!"));
-  } else {
-    UE_LOG(LogTemp, Error, TEXT("WE got em"));
+  NextPath();
+}
+
+void APostmanController::NextPath() {
+  if(at != -1 && at < instructions.Num()) {
+    FVector goal = *instructions[at++];
+
+    UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
+    FNavLocation destination;
+    NavigationArea->GetRandomReachablePointInRadius(goal, 4000, destination);
+
+    EPathFollowingRequestResult::Type type = MoveToLocation(destination.Location);
+    if(type == EPathFollowingRequestResult::Failed) {
+      UE_LOG(LogTemp, Error, TEXT("REE!"));
+    } else {
+      UE_LOG(LogTemp, Error, TEXT("Following path..."));
+    }
   }
+}
+
+void APostmanController::Tick(float DeltaTime) {
+  Super::Tick(DeltaTime);
+}
+
+void APostmanController::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result) {
+  UE_LOG(LogTemp, Error, TEXT("Move completed!"));
+  NextPath();
 }

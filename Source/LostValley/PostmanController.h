@@ -18,4 +18,7 @@ private:
 public:
 	APostmanController();
 	void PickedDelay();
+	void NextPath();
+	virtual void Tick(float DeltaTime) override;
+	virtual void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result) override;
 };
