@@ -5,7 +5,7 @@
 #include <Runtime\Engine\Public\DrawDebugHelpers.h>
 #include <Runtime\NavigationSystem\Public\NavigationSystem.h>
 #include "Math/UnrealMathUtility.h"
-
+#include <LostValley\Node.h>
 
 // Defines the PRM for the map
 
@@ -14,11 +14,30 @@
   // Need landscape heights to generate points at?
   // Need obstacles: lake, trees, houses, mailboxes
 
+
+
 Roadmap::Roadmap(UWorld* world) : world(world) {
   //world->GetNavigationSystem()->
   //UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
   //FBox map = NavigationArea->GetNavigationBounds().Array()[0].AreaBox;
   //FVector center = map.GetCenter() - map.GetSize() / 2;
+  mail.Add(0);
+  mail.Add(1);
+  mail.Add(2);
+  mail.Add(3);
+  mail.Add(4);
+  mail.Add(5);
+  mail.Add(6);
+  mail.Add(7);
+}
+
+bool Roadmap::HasMail() {
+  return mail.Num() > 0;
+}
+int Roadmap::GetMail() {
+  int i = mail[0];
+  mail.RemoveAt(0);
+  return i;
 }
 
 Roadmap::~Roadmap() {
@@ -192,24 +211,6 @@ void Roadmap::GeneratePRM() {
   //  }
   //}
 
-  /*for(int i = 0; i < NUM_NODES; i++) {
-  float x = nodePositions[i].X;
-  float y = nodePositions[i].Y;
-
-  FVector StartLocation{ x, y, 10000 };
-  FVector EndLocation{ x, y, -100 };
-
-  DrawDebugLine(
-    world,
-    StartLocation,
-    EndLocation,
-    FColor::Red,
-    true,
-    5.f,
-    0.f,
-    10.f
-  );
-}*/
 
   prmBuilt = true;
 }
@@ -223,7 +224,7 @@ bool Roadmap::IntersectsCircle(FVector obstacle, float obstacleRadius, FVector s
   float dy = y2 - y1;
   float dr_squared = dx * dx + dy * dy;
   float D = x1 * y2 - x2 * y1;
-  return obstacleRadius * obstacleRadius * dr_squared > D * D;
+  return obstacleRadius * obstacleRadius * dr_squared * 0.2f> D * D;
 }
 
 bool Roadmap::DropsBelowSeaLevel(FVector start, FVector end) {
@@ -269,31 +270,99 @@ float Roadmap::GetMapHeight(FVector2D Point) {
 
 TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
 
-  // Find closest node to from
-  float minDist = 9999999;
-  
+  // Find closest node to 'from'
+  TArray<FVector*> path;
   double heuristic[NUM_NODES];
-
-  TArray<FVector*> instructions;
+  float minDist = std::numeric_limits<float>::max();
   int start = -1;
-  int goal = deliveringTo == -1 ? IX_POSTBOX : NUM_GENERATED + deliveringTo;
+  int goal;
+  if(deliveringTo == -1) {
+    goal = IX_POSTBOX;
+  } else {
+    goal = NUM_GENERATED + deliveringTo;
+  }
 
   for(int i = 0; i < NUM_NODES; i++) {
     float dist = FVector::DistXY(from, nodePositions[i]);
 
     if(dist < minDist) {
-      dist = minDist;
+      minDist = dist;
       start = i;
     }
 
     heuristic[i] = FVector::DistXY(nodePositions[i], nodePositions[goal]);
   }
-
-  // Run A*
-
-  instructions.Add(&nodePositions[IX_POSTBOX]);
-
   
+  // Run A*
+  Node* nodes[NUM_NODES];
 
-  return instructions;
+  for(int i = 0; i < NUM_NODES; i++) {
+    nodes[i] = new Node(i, 0);
+  }
+
+  auto compare = [](Node* a, Node* b) { return a->cost < b->cost; };
+  std::priority_queue<Node*, std::vector<Node*>, decltype(compare)> exploring(compare);
+
+  Node* s = nodes[start];
+  s->predecssor = NULL;
+  s->distance = 0;
+  s->cost = 0;
+  s->c = 1;
+  
+  exploring.push(s);
+
+  while(!exploring.empty()) {
+    Node* u = exploring.top();
+    exploring.pop();
+
+    if(u->id == goal) {
+      Node* n = u;
+      while(n != NULL) {
+        path.Insert(&nodePositions[n->id], 0);
+        n = n->predecssor;
+      }
+      path.Insert(&nodePositions[start], 0);
+      path.Insert(&nodePositions[start], 0);
+      path.Insert(&nodePositions[start], 0);
+
+      for(int i = 0; i < NUM_NODES; i++) delete nodes[i];
+
+      UE_LOG(LogTemp, Error, TEXT("Found path of length %i..."), path.Num());
+
+      return path;
+    }
+
+    for(int j = 0; j < NUM_NODES; j++) {
+      int v = neighbors[u->id][j];
+
+      if(v == -1) break;
+
+      Node* vn = nodes[v];
+      float dist = cost[u->id][v];
+
+      if(vn->c == 0) {
+        vn->c = 1;
+        vn->distance = u->distance + dist;
+        vn->predecssor = u;
+        vn->cost = heuristic[v] + vn->distance;
+
+        exploring.push(vn);
+      } else if(vn->cost > u->distance + dist + heuristic[v]) {
+        vn->predecssor = u;
+        vn->distance = u->distance + dist;
+        vn->cost = u->distance + dist + heuristic[v];
+        // hack to update priority
+        // https://stackoverflow.com/questions/5810190/how-to-tell-a-stdpriority-queue-to-refresh-its-ordering/5810342
+        std::make_heap(const_cast<Node**>(&exploring.top()),
+          const_cast<Node**>(&exploring.top()) + exploring.size(),
+          compare);
+      }
+      u->c = 2;
+    }
+  }
+
+  UE_LOG(LogTemp, Error, TEXT("NO path found..."));
+
+  for(int i = 0; i < NUM_NODES; i++) delete nodes[i];
+  return TArray<FVector*>();
 }

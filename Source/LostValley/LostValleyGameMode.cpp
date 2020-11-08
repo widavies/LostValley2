@@ -15,3 +15,7 @@ ALostValleyGameMode::ALostValleyGameMode()
 
 	roadmap = new Roadmap(GetWorld());
 }
+
+void ALostValleyGameMode::PostLogin(APlayerController* NewPlayer) {
+	roadmap->GeneratePRM();
+}

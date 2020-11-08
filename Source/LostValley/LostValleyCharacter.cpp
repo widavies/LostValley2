@@ -20,7 +20,7 @@ ALostValleyCharacter::ALostValleyCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	ConstructorHelpers::FObjectFinder<UBlueprint> AIPrint(TEXT("/Game/Blueprint/PersonBP"));
+	ConstructorHelpers::FObjectFinder<UBlueprint> AIPrint(TEXT("/Game/Blueprint/AI_BP"));
 	ABC = AIPrint.Object->GeneratedClass;
 
 	// set our turn rates for input

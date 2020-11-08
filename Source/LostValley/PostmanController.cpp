@@ -10,6 +10,7 @@ APostmanController::APostmanController() {
 }
 
 TArray<FVector*> instructions;
+int dest = -1;
 int at = -1;
 bool ready = false;
 FVector Location(-15762.257812f, 27374.837891f, 3511.42041f);
@@ -19,17 +20,15 @@ void APostmanController::BeginPlay() {
   Super::BeginPlay();
 
   if(GetWorld()) {
-    ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
-    GameMode->roadmap->GeneratePRM();
-    instructions = GameMode->roadmap->Search(Location, 0);
-    at = 0;
-
     FTimerHandle UnusedHandle;
     GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 2.0f, false);
   }
 }
 
 void APostmanController::PickedDelay() {
+  ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
+  instructions = GameMode->roadmap->Search(Location, dest);
+  at = 0;
   NextPath();
 }
 
@@ -40,13 +39,32 @@ void APostmanController::NextPath() {
 
     UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
     FNavLocation destination;
-    NavigationArea->GetRandomReachablePointInRadius(goal, 8000, destination);
+    NavigationArea->GetRandomReachablePointInRadius(goal, 500.f, destination);
 
-    EPathFollowingRequestResult::Type type = MoveToLocation(destination.Location);
+    EPathFollowingRequestResult::Type type = MoveToLocation(destination.Location, 500.f, true, false);
     if(type == EPathFollowingRequestResult::Failed) {
-      UE_LOG(LogTemp, Error, TEXT("REE!"));
+      UE_LOG(LogTemp, Error, TEXT("Error."));
     } else {
       UE_LOG(LogTemp, Error, TEXT("Following path..."));
+    }
+  } 
+  
+  if(at == instructions.Num()) {
+    UE_LOG(LogTemp, Error, TEXT("Got assignment"));
+
+    ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
+
+    if(GameMode->roadmap->HasMail()) {
+      if(dest == -1) {
+        dest = GameMode->roadmap->GetMail();
+      } else {
+        dest = -1;
+      }
+      UE_LOG(LogTemp, Error, TEXT("Got assignment: %i"), dest);
+      FTimerHandle UnusedHandle;
+      GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 2.0f, false);
+    } else {
+      GetWorld()->DestroyActor(this);
     }
   }
 }

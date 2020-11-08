@@ -9,8 +9,8 @@
 /**
  * 
  */
-const int NUM_NODES = 111;
 const int NUM_GENERATED = 100;
+const int NUM_NODES = NUM_GENERATED + 11;
 const int IX_POSTBOX = NUM_NODES - 1;
 const int IX_BRIDGE_1 = NUM_NODES - 2;
 const int IX_BRIDGE_2 = NUM_NODES - 3;
@@ -28,11 +28,14 @@ public:
 	void GeneratePRM();
 	bool IntersectsCircle(FVector obstacle, float obstacleRadius, FVector start, FVector end);
 	bool DropsBelowSeaLevel(FVector start, FVector end);
+	bool HasMail();
+	int GetMail();
 	FVector nodePositions[NUM_NODES];
 	// The distance between nodes
 	int neighbors[NUM_NODES][NUM_NODES];
 	float cost[NUM_NODES][NUM_NODES];
 	bool prmBuilt = false;
 	int waitingMail = 10;
+	TArray<int> mail;
 	UWorld* world;
 };

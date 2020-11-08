@@ -9,14 +9,14 @@
 #include "LostValleyGameMode.generated.h"
 
 UCLASS(minimalapi)
-class ALostValleyGameMode : public AGameModeBase
-{
-	GENERATED_BODY()
+class ALostValleyGameMode : public AGameModeBase {
+  GENERATED_BODY()
 
 
 public:
-	ALostValleyGameMode();
-	Roadmap* roadmap;
+  ALostValleyGameMode();
+  Roadmap* roadmap;
+  virtual void PostLogin(APlayerController* NewPlayer) override;
 };
 
 
