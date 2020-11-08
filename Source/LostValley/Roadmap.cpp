@@ -322,12 +322,8 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
         n = n->predecssor;
       }
       path.Insert(&nodePositions[start], 0);
-      path.Insert(&nodePositions[start], 0);
-      path.Insert(&nodePositions[start], 0);
-
+      
       for(int i = 0; i < NUM_NODES; i++) delete nodes[i];
-
-      UE_LOG(LogTemp, Error, TEXT("Found path of length %i..."), path.Num());
 
       return path;
     }
@@ -360,8 +356,6 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
       u->c = 2;
     }
   }
-
-  UE_LOG(LogTemp, Error, TEXT("NO path found..."));
 
   for(int i = 0; i < NUM_NODES; i++) delete nodes[i];
   return TArray<FVector*>();

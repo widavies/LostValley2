@@ -26,14 +26,17 @@ void APostmanController::BeginPlay() {
 }
 
 void APostmanController::PickedDelay() {
+  UE_LOG(LogTemp, Warning, TEXT("Delivering mail to %i"), dest);
+
   ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
-  instructions = GameMode->roadmap->Search(Location, dest);
+  instructions = GameMode->roadmap->Search(GetPawn()->GetActorLocation(), dest);
   at = 0;
   NextPath();
 }
 
 void APostmanController::NextPath() {
   if(at != -1 && at < instructions.Num()) {
+    UE_LOG(LogTemp, Warning, TEXT("Performing step %i / %i"), at, instructions.Num() - 1);
     FVector goal = *instructions[at++];
     Location = goal;
 
@@ -44,13 +47,10 @@ void APostmanController::NextPath() {
     EPathFollowingRequestResult::Type type = MoveToLocation(destination.Location, 500.f, true, false);
     if(type == EPathFollowingRequestResult::Failed) {
       UE_LOG(LogTemp, Error, TEXT("Error."));
-    } else {
-      UE_LOG(LogTemp, Error, TEXT("Following path..."));
     }
   } 
-  
-  if(at == instructions.Num()) {
-    UE_LOG(LogTemp, Error, TEXT("Got assignment"));
+  else if(at == instructions.Num()) {
+    UE_LOG(LogTemp, Error, TEXT("Delivery complete. Getting next delivery."));
 
     ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
 
@@ -60,7 +60,6 @@ void APostmanController::NextPath() {
       } else {
         dest = -1;
       }
-      UE_LOG(LogTemp, Error, TEXT("Got assignment: %i"), dest);
       FTimerHandle UnusedHandle;
       GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &APostmanController::PickedDelay, 2.0f, false);
     } else {
