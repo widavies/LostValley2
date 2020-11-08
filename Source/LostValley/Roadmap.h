@@ -9,12 +9,16 @@
 /**
  * 
  */
+const int NUM_NODES = 1000;
+
 class LOSTVALLEY_API Roadmap
 {
 public:
 	Roadmap(UWorld * world);
 	~Roadmap();
 	FVector WhereTo();
-private:
+	float GetMapHeight(FVector2D Point);
+	void GeneratePRM();
+	FVector2D nodePositions[NUM_NODES];
 	UWorld* world;
 };

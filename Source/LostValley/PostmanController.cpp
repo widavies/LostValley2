@@ -19,9 +19,11 @@ void APostmanController::BeginPlay() {
   UE_LOG(LogTemp, Warning, TEXT("I have somewhere to go2."));
 
   if(GetWorld()) {
+    
     ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
-
+    GameMode->roadmap->GeneratePRM();
     FVector goal = GameMode->roadmap->WhereTo();
+    
 
     UE_LOG(LogTemp, Log, TEXT("Got world. Now trying to find nav area for random loc..."));
     // get the current nav system from the world
