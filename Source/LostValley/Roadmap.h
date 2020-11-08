@@ -9,7 +9,7 @@
 /**
  * 
  */
-const int NUM_GENERATED = 100;
+const int NUM_GENERATED = 300;
 const int NUM_NODES = NUM_GENERATED + 11;
 const int IX_POSTBOX = NUM_NODES - 1;
 const int IX_BRIDGE_1 = NUM_NODES - 2;
@@ -30,6 +30,7 @@ public:
 	bool DropsBelowSeaLevel(FVector start, FVector end);
 	bool HasMail();
 	int GetMail();
+	void AddMail(int address);
 	FVector nodePositions[NUM_NODES];
 	// The distance between nodes
 	int neighbors[NUM_NODES][NUM_NODES];

@@ -21,13 +21,9 @@ Roadmap::Roadmap(UWorld* world) : world(world) {
   //UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
   //FBox map = NavigationArea->GetNavigationBounds().Array()[0].AreaBox;
   //FVector center = map.GetCenter() - map.GetSize() / 2;
-  mail.Add(0);
-  mail.Add(1);
-  mail.Add(2);
-  mail.Add(3);
-  mail.Add(4);
-  mail.Add(5);
-  mail.Add(6);
+  mail.Add(7);
+  mail.Add(7);
+  mail.Add(7);
   mail.Add(7);
 }
 
@@ -35,9 +31,11 @@ bool Roadmap::HasMail() {
   return mail.Num() > 0;
 }
 int Roadmap::GetMail() {
-  int i = mail[0];
-  mail.RemoveAt(0);
-  return i;
+  return mail.Pop();
+}
+
+void Roadmap::AddMail(int address) {
+  mail.Add(address);
 }
 
 Roadmap::~Roadmap() {
@@ -224,7 +222,7 @@ bool Roadmap::IntersectsCircle(FVector obstacle, float obstacleRadius, FVector s
   float dy = y2 - y1;
   float dr_squared = dx * dx + dy * dy;
   float D = x1 * y2 - x2 * y1;
-  return obstacleRadius * obstacleRadius * dr_squared * 0.2f> D * D;
+  return obstacleRadius * obstacleRadius * dr_squared > D * D;
 }
 
 bool Roadmap::DropsBelowSeaLevel(FVector start, FVector end) {
@@ -270,6 +268,8 @@ float Roadmap::GetMapHeight(FVector2D Point) {
 
 TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
 
+  UE_LOG(LogTemp, Warning, TEXT("IS PRM built? %i"), prmBuilt ? 1 : 0);
+
   // Find closest node to 'from'
   TArray<FVector*> path;
   double heuristic[NUM_NODES];
@@ -293,6 +293,8 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
     heuristic[i] = FVector::DistXY(nodePositions[i], nodePositions[goal]);
   }
   
+  UE_LOG(LogTemp, Warning, TEXT("Running search from %i to %i"), start, goal);
+
   // Run A*
   Node* nodes[NUM_NODES];
 
@@ -300,8 +302,7 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
     nodes[i] = new Node(i, 0);
   }
 
-  auto compare = [](Node* a, Node* b) { return a->cost < b->cost; };
-  std::priority_queue<Node*, std::vector<Node*>, decltype(compare)> exploring(compare);
+  TArray<Node*> exploring;
 
   Node* s = nodes[start];
   s->predecssor = NULL;
@@ -309,11 +310,18 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
   s->cost = 0;
   s->c = 1;
   
-  exploring.push(s);
+  exploring.Add(s);
 
-  while(!exploring.empty()) {
-    Node* u = exploring.top();
-    exploring.pop();
+  while(exploring.Num() > 0) {
+    Node* u;
+    float smallest = std::numeric_limits<float>::max();
+    for(int i = 0; i < exploring.Num(); i++) {
+      if(exploring[i]->cost < smallest) {
+        smallest = exploring[i]->cost;
+        u = exploring[i];
+      }
+    }
+    exploring.Remove(u);
 
     if(u->id == goal) {
       Node* n = u;
@@ -324,6 +332,25 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
       path.Insert(&nodePositions[start], 0);
       
       for(int i = 0; i < NUM_NODES; i++) delete nodes[i];
+
+      //for(int i = 0; i < path.Num(); i++) {
+      //  float x = path[i]->X;
+      //  float y = path[i]->Y;
+
+      //  FVector StartLocation{ x, y, 10000 };
+      //  FVector EndLocation{ x, y, -100 };
+
+      //  DrawDebugLine(
+      //    world,
+      //    StartLocation,
+      //    EndLocation,
+      //    FColor::Green,
+      //    true,
+      //    5.f,
+      //    0.f,
+      //    10.f
+      //  );
+      //}
 
       return path;
     }
@@ -342,16 +369,11 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
         vn->predecssor = u;
         vn->cost = heuristic[v] + vn->distance;
 
-        exploring.push(vn);
+        exploring.Add(vn);
       } else if(vn->cost > u->distance + dist + heuristic[v]) {
         vn->predecssor = u;
         vn->distance = u->distance + dist;
         vn->cost = u->distance + dist + heuristic[v];
-        // hack to update priority
-        // https://stackoverflow.com/questions/5810190/how-to-tell-a-stdpriority-queue-to-refresh-its-ordering/5810342
-        std::make_heap(const_cast<Node**>(&exploring.top()),
-          const_cast<Node**>(&exploring.top()) + exploring.size(),
-          compare);
       }
       u->c = 2;
     }

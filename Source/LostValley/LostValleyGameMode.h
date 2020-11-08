@@ -15,6 +15,7 @@ class ALostValleyGameMode : public AGameModeBase {
 
 public:
   ALostValleyGameMode();
+  ~ALostValleyGameMode();
   Roadmap* roadmap;
   virtual void PostLogin(APlayerController* NewPlayer) override;
 };

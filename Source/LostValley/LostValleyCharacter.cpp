@@ -9,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include <LostValley\Roadmap.h>
+#include "LostValleyGameMode.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ALostValleyCharacter
@@ -64,6 +65,7 @@ void ALostValleyCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("SpawnPostman", IE_Pressed, this, &ALostValleyCharacter::SpawnPostman);
+	PlayerInputComponent->BindAction("AddMail", IE_Pressed, this, &ALostValleyCharacter::AddMail);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ALostValleyCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ALostValleyCharacter::MoveRight);
@@ -82,7 +84,11 @@ void ALostValleyCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ALostValleyCharacter::OnResetVR);
+}
 
+void ALostValleyCharacter::AddMail() {
+	ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
+	GameMode->roadmap->AddMail(FMath::RandRange(0, 7));
 }
 
 void ALostValleyCharacter::SpawnPostman() {
@@ -103,7 +109,6 @@ void ALostValleyCharacter::SpawnPostman() {
 	////World->SpawnActor<AActor>(GeneratedBP->GeneratedClass)
 	ACharacter* Spawned = World->SpawnActor<ACharacter>(ABC, Location, Rotation, SpawnInfo);
 	Spawned->SpawnDefaultController();
-
 }
 
 

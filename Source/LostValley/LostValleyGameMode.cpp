@@ -13,9 +13,15 @@ ALostValleyGameMode::ALostValleyGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("Making game state..."));
 	roadmap = new Roadmap(GetWorld());
 }
 
+ALostValleyGameMode::~ALostValleyGameMode() {
+	delete roadmap;
+}
+
 void ALostValleyGameMode::PostLogin(APlayerController* NewPlayer) {
+	UE_LOG(LogTemp, Warning, TEXT("Creating PRM..."));
 	roadmap->GeneratePRM();
 }
