@@ -12,16 +12,16 @@ APostmanController::APostmanController() {
 TArray<FVector*> instructions;
 int at = -1;
 bool ready = false;
+FVector Location(-15762.257812f, 27374.837891f, 3511.42041f);
 
 // https://community.gamedev.tv/t/random-location/146210/8
 void APostmanController::BeginPlay() {
   Super::BeginPlay();
 
-  
   if(GetWorld()) {
     ALostValleyGameMode* GameMode = (ALostValleyGameMode*)GetWorld()->GetAuthGameMode();
     GameMode->roadmap->GeneratePRM();
-    instructions = GameMode->roadmap->Search(-1);
+    instructions = GameMode->roadmap->Search(Location, 0);
     at = 0;
 
     FTimerHandle UnusedHandle;
@@ -36,10 +36,11 @@ void APostmanController::PickedDelay() {
 void APostmanController::NextPath() {
   if(at != -1 && at < instructions.Num()) {
     FVector goal = *instructions[at++];
+    Location = goal;
 
     UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
     FNavLocation destination;
-    NavigationArea->GetRandomReachablePointInRadius(goal, 4000, destination);
+    NavigationArea->GetRandomReachablePointInRadius(goal, 8000, destination);
 
     EPathFollowingRequestResult::Type type = MoveToLocation(destination.Location);
     if(type == EPathFollowingRequestResult::Failed) {

@@ -23,7 +23,7 @@ public:
 	Roadmap(UWorld * world);
 	~Roadmap();
 	// deliveringTo == -1 if has no mail
-	TArray<FVector*> Search(int deliveringTo);
+	TArray<FVector*> Search(FVector from, int deliveringTo);
 	float GetMapHeight(FVector2D Point);
 	void GeneratePRM();
 	bool IntersectsCircle(FVector obstacle, float obstacleRadius, FVector start, FVector end);

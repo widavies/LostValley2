@@ -39,7 +39,7 @@ void Roadmap::GeneratePRM() {
 
   TArray<FVector> obstacles;
   TArray<float> obstacleRadii;
-  
+
   //While not reached end (overloaded bool operator)
   FActorIterator AllActorsItr = FActorIterator(world);
   while(AllActorsItr) {
@@ -137,7 +137,7 @@ void Roadmap::GeneratePRM() {
 
       FVector a = nodePositions[i];
       FVector b = nodePositions[j];
-      
+
       // We need to make sure that this ray is a valid one:
         // It doesn't pass through any objects.
         // It doesn't pass through the lake
@@ -267,14 +267,33 @@ float Roadmap::GetMapHeight(FVector2D Point) {
   return 0;
 }
 
-TArray<FVector*> Roadmap::Search(int deliveringTo) {
+TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
+
+  // Find closest node to from
+  float minDist = 9999999;
+  
+  double heuristic[NUM_NODES];
+
   TArray<FVector*> instructions;
+  int start = -1;
+  int goal = deliveringTo == -1 ? IX_POSTBOX : NUM_GENERATED + deliveringTo;
+
+  for(int i = 0; i < NUM_NODES; i++) {
+    float dist = FVector::DistXY(from, nodePositions[i]);
+
+    if(dist < minDist) {
+      dist = minDist;
+      start = i;
+    }
+
+    heuristic[i] = FVector::DistXY(nodePositions[i], nodePositions[goal]);
+  }
+
+  // Run A*
 
   instructions.Add(&nodePositions[IX_POSTBOX]);
-  instructions.Add(&nodePositions[NUM_GENERATED]);
-  instructions.Add(&nodePositions[NUM_GENERATED+1]);
-  instructions.Add(&nodePositions[NUM_GENERATED+2]);
-  instructions.Add(&nodePositions[NUM_GENERATED+3]);
+
+  
 
   return instructions;
 }
