@@ -21,8 +21,10 @@ Roadmap::Roadmap(UWorld* world) : world(world) {
   //UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
   //FBox map = NavigationArea->GetNavigationBounds().Array()[0].AreaBox;
   //FVector center = map.GetCenter() - map.GetSize() / 2;
-  mail.Add(7);
-  mail.Add(7);
+  mail.Add(0);
+  mail.Add(1);
+  mail.Add(2);
+  mail.Add(3);
   mail.Add(7);
   mail.Add(7);
 }
@@ -214,15 +216,21 @@ void Roadmap::GeneratePRM() {
 }
 
 bool Roadmap::IntersectsCircle(FVector obstacle, float obstacleRadius, FVector start, FVector end) {
-  float x1 = start.X - obstacle.X;
-  float x2 = end.X - obstacle.X;
-  float y1 = start.Y - obstacle.Y;
-  float y2 = end.Y - obstacle.Y;
-  float dx = x2 - x1;
-  float dy = y2 - y1;
-  float dr_squared = dx * dx + dy * dy;
-  float D = x1 * y2 - x2 * y1;
-  return obstacleRadius * obstacleRadius * dr_squared > D * D;
+  FVector2D center(obstacle.X, obstacle.Y);
+  FVector2D l_start(start.X, start.Y);
+  FVector2D l_end(end.X, end.Y);
+
+  FVector2D toCircle = center - l_start;
+  FVector2D l_dir = l_end - l_start;
+  l_dir.Normalize();
+
+  float a = 1;
+  float b = -2 * FVector2D::DotProduct(l_dir, toCircle);
+  float c = toCircle.SizeSquared() - (obstacleRadius * obstacleRadius);
+
+  float d = b * b - 4 * a * c;
+
+  return d >= 0;
 }
 
 bool Roadmap::DropsBelowSeaLevel(FVector start, FVector end) {
@@ -307,7 +315,7 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
   s->cost = 0;
   s->c = 1;
   
-  auto compare = [](Node* a, Node* b) { return a->cost < b->cost; };
+  auto compare = [](Node* a, Node* b) { return a->cost > b->cost; };
   std::priority_queue<Node*, std::vector<Node*>, decltype(compare)> exploring(compare);
   exploring.push(s);
 
