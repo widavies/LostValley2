@@ -270,7 +270,6 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
 
   UE_LOG(LogTemp, Warning, TEXT("IS PRM built? %i"), prmBuilt ? 1 : 0);
 
-  // Find closest node to 'from'
   TArray<FVector*> path;
   double heuristic[NUM_NODES];
   float minDist = std::numeric_limits<float>::max();
@@ -302,26 +301,19 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
     nodes[i] = new Node(i, 0);
   }
 
-  TArray<Node*> exploring;
-
   Node* s = nodes[start];
   s->predecssor = NULL;
   s->distance = 0;
   s->cost = 0;
   s->c = 1;
   
-  exploring.Add(s);
+  auto compare = [](Node* a, Node* b) { return a->cost < b->cost; };
+  std::priority_queue<Node*, std::vector<Node*>, decltype(compare)> exploring(compare);
+  exploring.push(s);
 
-  while(exploring.Num() > 0) {
-    Node* u;
-    float smallest = std::numeric_limits<float>::max();
-    for(int i = 0; i < exploring.Num(); i++) {
-      if(exploring[i]->cost < smallest) {
-        smallest = exploring[i]->cost;
-        u = exploring[i];
-      }
-    }
-    exploring.Remove(u);
+  while(!exploring.empty()) {
+    Node* u = exploring.top();
+    exploring.pop();
 
     if(u->id == goal) {
       Node* n = u;
@@ -369,11 +361,17 @@ TArray<FVector*> Roadmap::Search(FVector from, int deliveringTo) {
         vn->predecssor = u;
         vn->cost = heuristic[v] + vn->distance;
 
-        exploring.Add(vn);
+        exploring.push(vn);
       } else if(vn->cost > u->distance + dist + heuristic[v]) {
         vn->predecssor = u;
         vn->distance = u->distance + dist;
         vn->cost = u->distance + dist + heuristic[v];
+
+        // hack to update priority
+        // https://stackoverflow.com/questions/5810190/how-to-tell-a-stdpriority-queue-to-refresh-its-ordering/5810342
+        std::make_heap(const_cast<Node**>(&exploring.top()),
+          const_cast<Node**>(&exploring.top()) + exploring.size(),
+          compare);
       }
       u->c = 2;
     }
