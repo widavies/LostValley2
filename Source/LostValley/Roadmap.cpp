@@ -9,13 +9,6 @@
 
 // Defines the PRM for the map
 
-// TODO
-  // Need bounding area to generate points within
-  // Need landscape heights to generate points at?
-  // Need obstacles: lake, trees, houses, mailboxes
-
-
-
 Roadmap::Roadmap(UWorld* world) : world(world) {
   //world->GetNavigationSystem()->
   //UNavigationSystemV1* NavigationArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this);
